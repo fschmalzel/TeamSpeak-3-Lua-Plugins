@@ -4,7 +4,7 @@ ts3.getCurrentServerConnectionHandlerID()
 ts3.printMessageToCurrentTab(message)
 ts3.requestClientPoke(serverConnectionHandlerID, clientID, message) > error
 ts3.getClientList(serverConnectionHandlerID) > clientsList, error
-
+ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, message, targetClientID) > error
 local myChannelName, error = ts3.getChannelVariableAsString(serverConnectionHandlerID, myChannelID, ts3defs.ChannelProperties.CHANNEL_NAME)
 if error ~= ts3errors.ERROR_ok then
 	print("Error getting channel name: " .. error)
@@ -23,7 +23,7 @@ loadFile()
 local serverConnectionHandlerID = ts3.getCurrentServerConnectionHandlerID()
 local myClientID = ts3.getClientID(serverConnectionHandlerID)
 
-function xprint(msg)
+local function xprint(msg)
 	ts3.printMessageToCurrentTab(msg)
 end
 
@@ -47,14 +47,14 @@ function onTextMessageEvent(serverConnectionHandlerID, targetMode, toID, fromID,
 		elseif string.lower(string.sub(message, 6, 9) == "show" then
 			show(fromID, string.sub(message, 11, string.len(message))
 		elseif string.lower(string.sub(message, 6, 11) == "update" then
-			updateInfo(fromName, fromUniqueIdentifier)
+			updateInfo(fromID, fromName, fromUniqueIdentifier)
 		elseif string.lower(string.sub(message, 6, 12) == "delline" then
-			deleteLine(fromUniqueIdentifier, string.sub(message, 14, string.len(message)))
+			deleteLine(fromID, fromUniqueIdentifier, string.sub(message, 14, string.len(message)))
 		end
 	end	
 end
 
-function save(Nickname, UniqueID, Line)
+local function save(Nickname, UniqueID, Line)
 	local value = 0
 	local exists = false
 	for index, value in pairs(data) do
@@ -72,19 +72,19 @@ function save(Nickname, UniqueID, Line)
 	end
 end
 
-function show(ClientID, Name)
+local function show(ClientID, Nickname)
 	
 end
 
-function updateFile()
+local function updateFile()
 	
 end
 
-function loadFile()
+local function loadFile()
 
 end
 
-function updateInfo(Nickname, UniqueID)
+local function updateInfo(ClientID, Nickname, UniqueID)
 	local value = 0
 	local exists = false
 	for index, value in pairs(data) do
@@ -97,11 +97,14 @@ function updateInfo(Nickname, UniqueID)
 		data[index][1] = Nickname -- Changing the Nickname
 		updateFile()
 	else
-		-- Sending an Error Msg (does not exist)
+		local error = ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, "Error: Client does not exist! To create an client simply run \"info add <Line>\"", ClientID)
+		if error ~= ts3errors.ERROR_ok then
+			print("Error sending message: " .. error)
+		end
 	end
 end
 
-function deleteLine(UniqueID, numberLine)
+local function deleteLine(ClientID, UniqueID, numberLine)
 	if tonumber(numberLine) >= 1 
 	local value = 0
 	local exists = false
@@ -115,9 +118,15 @@ function deleteLine(UniqueID, numberLine)
 		table.remove(data[index][3], tonumber(numberLine))
 		updateFile()
 	elseif exists == false then
-		-- Sending an Error Msg (User does not exist)
+		local error = ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, "Error: Client does not exist! To create an client simply run \"info add <Line>\"", ClientID)
+		if error ~= ts3errors.ERROR_ok then
+			print("Error sending message: " .. error)
+		end
 	elseif tonumber(numberLine) < 1 or tonumber(numberLine) > #data[index][3]then
-		-- Sending an Error Msg (Line does not exist)
+		local error = ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, "Error: Line does not exist!", ClientID)
+		if error ~= ts3errors.ERROR_ok then
+			print("Error sending message: " .. error)
+		end
 	end
 end
 
