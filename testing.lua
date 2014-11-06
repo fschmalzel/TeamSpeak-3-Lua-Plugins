@@ -11,17 +11,20 @@ if error ~= ts3errors.ERROR_ok then
 	return
 end]]--
 
-require("ts3defs")      -- Required
-require("ts3errors")    -- Required
-require("ts3init")      -- Required
+require("ts3defs")
+require("ts3errors")
+require("ts3init")
 require("ts3autoload")
 require("ts3events")
+
+--data{{Nickname, UniqueID, {Line1, Line2, Line3, ...}},{Nickname, UniqueID, {Line1, Line2, Line3, ...}}
+data={}
+serverConnectionHandlerID = ts3.getCurrentServerConnectionHandlerID()
+myClientID = ts3.getClientID(serverConnectionHandlerID)
 
 function xprint(msg)
 	ts3.printMessageToCurrentTab(msg)
 end
-serverConnectionHandlerID = ts3.getCurrentServerConnectionHandlerID()
-myClientID = ts3.getClientID(serverConnectionHandlerID)
 
 function getIDs()
 	Clients = ts3.getClientList(serverConnectionHandlerID)
@@ -47,11 +50,11 @@ function onTextMessageEvent(serverConnectionHandlerID, targetMode, toID, fromID,
 end
 
 function save(Nickname, UniqueID, Line)
-
+	for i, v in 
 end
 
-function show(fromID, Name)
-
+function show(ClientID, Name)
+	
 end
 
 
