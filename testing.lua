@@ -18,14 +18,14 @@ require("ts3autoload")
 require("ts3events")
 
 --[[
-save()					Creating User in table 100%
-show()					Displaying Information 100%
-updateNick()			Changing Nickname 100%
-deleteLine()			Deleting one Line 100%
-onTextMessageEvent() Chatcommands 100%
+save()					Creating User in table 100% Benachrichtigungen fehlen
+show()					Displaying Information 100% Benachrichtigungen fehlen
+updateNick()			Changing Nickname 100% Benachrichtigungen fehlen
+deleteLine()			Deleting one Line 100% Benachrichtigungen fehlen
+onTextMessageEvent() Chatcommands 100% Benachrichtigungen fehlen
 updateFile()			Updating the File 0%
 loadFile()				Loading the File 0%
-deleteClient()			Deleting an Client out of the table 0%
+deleteClient()			Deleting an Client out of the table 100% Benachrichtigungen fehlen
 ]]
 
 --table structure: data{{Nickname, UniqueID, {Line1, Line2, Line3, ...}},{Nickname, UniqueID, {Line1, Line2, Line3, ...}}
@@ -166,18 +166,8 @@ local function deleteClient(ClientID, UniqueID, Msg)
 			end
 		end
 		if exists == true then
-			data[X][3][#data[X][3]+1] = Line -- Adding one line
-			data[X][1] = Nickname -- Changing the Nickname
-			updateFile()
-		else
-			data[#data+1]={Nickname, UniqueID, {Line}} -- Creating a new User
+			table.remove(data[X])
 		end
-		
-		
-		
-		
-		
-		
 	else
 		local error = ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, "Are you sure, that you want to erase yourself in the DB? If you are run \"info delme yes\"", ClientID)
 		if error ~= ts3errors.ERROR_ok then
