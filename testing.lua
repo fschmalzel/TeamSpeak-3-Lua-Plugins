@@ -18,16 +18,17 @@ require("ts3autoload")
 require("ts3events")
 
 --data{{Nickname, UniqueID, {Line1, Line2, Line3, ...}},{Nickname, UniqueID, {Line1, Line2, Line3, ...}}
-data={}
-serverConnectionHandlerID = ts3.getCurrentServerConnectionHandlerID()
-myClientID = ts3.getClientID(serverConnectionHandlerID)
+local data={}
+loadFile()
+local serverConnectionHandlerID = ts3.getCurrentServerConnectionHandlerID()
+local myClientID = ts3.getClientID(serverConnectionHandlerID)
 
 function xprint(msg)
 	ts3.printMessageToCurrentTab(msg)
 end
 
 function getIDs()
-	Clients = ts3.getClientList(serverConnectionHandlerID)
+	local Clients = ts3.getClientList(serverConnectionHandlerID)
 	for i = 1, #Clients do
 		local Nickname, error = ts3.getClientVariableAsString(serverConnectionHandlerID, Clients[i], ts3defs.ClientProperties.CLIENT_NICKNAME)
 		if error ~= ts3errors.ERROR_ok then
@@ -40,22 +41,92 @@ end
 
 function onTextMessageEvent(serverConnectionHandlerID, targetMode, toID, fromID, fromName, fromUniqueIdentifier, message, ffIgnored)
 	print("Lua: onTextMessageEvent: " .. serverConnectionHandlerID .. " " .. targetMode .. " " .. toID .. " " .. fromID .. " " .. fromName .. " " .. fromUniqueIdentifier .. " " .. message .. " " .. ffIgnored)
-	if string.lower(string.sub(message, 1, 4) == "info" then -- info add
+	if string.lower(string.sub(message, 1, 4) == "info" then --     info add
 		if string.lower(string.sub(message, 6, 8) == "add" then --   1234567890
-			save(fromName, UniqueID, string.sub(message, 10, string.len(message))
+			save(fromName, fromUniqueIdentifier, string.sub(message, 10, string.len(message))
 		elseif string.lower(string.sub(message, 6, 9) == "show" then
 			show(fromID, string.sub(message, 11, string.len(message))
+		elseif string.lower(string.sub(message, 6, 11) == "update" then
+			updateInfo(fromName, fromUniqueIdentifier)
+		elseif string.lower(string.sub(message, 6, 12) == "delline" then
+			deleteLine(fromUniqueIdentifier, string.sub(message, 14, string.len(message)))
 		end
 	end	
 end
 
 function save(Nickname, UniqueID, Line)
-	for i, v in 
+	local value = 0
+	local exists = false
+	for index, value in pairs(data) do
+		if value[2] == UniqueID then
+			exists = true
+			value = index
+		end
+	end
+	if exists == true then
+		data[index][3][#data[index][3]+1] = Line -- Adding one line
+		data[index][1] = Nickname -- Changing the Nickname
+		updateFile()
+	else
+		data[#data+1]={Nickname, UniqueID, {Line}}
+	end
 end
 
 function show(ClientID, Name)
 	
 end
+
+function updateFile()
+	
+end
+
+function loadFile()
+
+end
+
+function updateInfo(Nickname, UniqueID)
+	local value = 0
+	local exists = false
+	for index, value in pairs(data) do
+		if value[2] == UniqueID then
+			exists = true
+			value = index
+		end
+	end
+	if exists == true then
+		data[index][1] = Nickname -- Changing the Nickname
+		updateFile()
+	else
+		-- Sending an Error Msg (does not exist)
+	end
+end
+
+function deleteLine(UniqueID, numberLine)
+	if tonumber(numberLine) >= 1 
+	local value = 0
+	local exists = false
+	for index, value in pairs(data) do
+		if value[2] == UniqueID then
+			exists = true
+			value = index
+		end
+	end
+	if exists == true and tonumber(numberLine) >= 1 and tonumber(numberLine) <= #data[index][3] then
+		table.remove(data[index][3], tonumber(numberLine))
+		updateFile()
+	elseif exists == false then
+		-- Sending an Error Msg (User does not exist)
+	elseif tonumber(numberLine) < 1 or tonumber(numberLine) > #data[index][3]then
+		-- Sending an Error Msg (Line does not exist)
+	end
+end
+
+
+
+
+
+
+
 
 
 
