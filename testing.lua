@@ -17,7 +17,18 @@ require("ts3init")
 require("ts3autoload")
 require("ts3events")
 
---data{{Nickname, UniqueID, {Line1, Line2, Line3, ...}},{Nickname, UniqueID, {Line1, Line2, Line3, ...}}
+--[[
+save()					Creating User in table 100%
+show()					Displaying Information 100%
+updateNick()			Changing Nickname 100%
+deleteLine()			Deleting one Line 100%
+onTextMessageEvent() Chatcommands 100%
+updateFile()			Updating the File 0%
+loadFile()				Loading the File 0%
+deleteClient()			Deleting an Client out of the table 0%
+]]
+
+--table structure: data{{Nickname, UniqueID, {Line1, Line2, Line3, ...}},{Nickname, UniqueID, {Line1, Line2, Line3, ...}}
 local data={}
 loadFile()
 local serverConnectionHandlerID = ts3.getCurrentServerConnectionHandlerID()
@@ -25,18 +36,6 @@ local myClientID = ts3.getClientID(serverConnectionHandlerID)
 
 local function xprint(msg)
 	ts3.printMessageToCurrentTab(msg)
-end
-
-function getIDs()
-	local Clients = ts3.getClientList(serverConnectionHandlerID)
-	for i = 1, #Clients do
-		local Nickname, error = ts3.getClientVariableAsString(serverConnectionHandlerID, Clients[i], ts3defs.ClientProperties.CLIENT_NICKNAME)
-		if error ~= ts3errors.ERROR_ok then
-			xprint("Error getting client nickname: " .. error .. " | ID: " .. Clients[i])
-			return
-		end
-		xprint("ID: " .. Clients[i] .. " | Nickname: " .. Nickname)
-	end
 end
 
 function onTextMessageEvent(serverConnectionHandlerID, targetMode, toID, fromID, fromName, fromUniqueIdentifier, message, ffIgnored)
@@ -47,33 +46,60 @@ function onTextMessageEvent(serverConnectionHandlerID, targetMode, toID, fromID,
 		elseif string.lower(string.sub(message, 6, 9) == "show" then
 			show(fromID, string.sub(message, 11, string.len(message))
 		elseif string.lower(string.sub(message, 6, 11) == "update" then
-			updateInfo(fromID, fromName, fromUniqueIdentifier)
+			updateNick(fromID, fromName, fromUniqueIdentifier)
 		elseif string.lower(string.sub(message, 6, 12) == "delline" then
 			deleteLine(fromID, fromUniqueIdentifier, string.sub(message, 14, string.len(message)))
+		elseif string.lower(string.sub(message, 6, 10) == "delme" then
+			deleteClient(fromID, fromUniqueIdentifier, string.sub(message, 12, string.len(message)))
 		end
 	end	
 end
 
 local function save(Nickname, UniqueID, Line)
-	local value = 0
+	local X = 0
 	local exists = false
 	for index, value in pairs(data) do
 		if value[2] == UniqueID then
 			exists = true
-			value = index
+			X = index
 		end
 	end
 	if exists == true then
-		data[index][3][#data[index][3]+1] = Line -- Adding one line
-		data[index][1] = Nickname -- Changing the Nickname
+		data[X][3][#data[X][3]+1] = Line -- Adding one line
+		data[X][1] = Nickname -- Changing the Nickname
 		updateFile()
 	else
-		data[#data+1]={Nickname, UniqueID, {Line}}
+		data[#data+1]={Nickname, UniqueID, {Line}} -- Creating a new User
 	end
 end
 
 local function show(ClientID, Nickname)
-	
+	local X = 0
+	local exists = false
+	for index, value in ipairs(data) do
+		if string.find(value[1], Nickname) ~= nil then
+			exists = true
+			X = index
+		end
+	end
+	if exists == true then
+		data[X][1] = Nickname
+		local error = ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, "Information about \""..data[X][1].."\":", ClientID)
+		if error ~= ts3errors.ERROR_ok then
+			xprint("Error sending message: " .. error)
+		end
+		for index, value in ipairs(data[X][3]) do
+			local error = ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, value, ClientID)
+			if error ~= ts3errors.ERROR_ok then
+				xprint("Error sending message: " .. error)
+			end
+		end
+	else
+		local error = ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, "Error: Client does not exist! To create an client simply run \"info add <Line>\"", ClientID)
+		if error ~= ts3errors.ERROR_ok then
+			xprint("Error sending message: " .. error)
+		end
+	end
 end
 
 local function updateFile()
@@ -84,51 +110,87 @@ local function loadFile()
 
 end
 
-local function updateInfo(ClientID, Nickname, UniqueID)
-	local value = 0
+local function updateNick(ClientID, Nickname, UniqueID)
+	local X = 0
 	local exists = false
 	for index, value in pairs(data) do
 		if value[2] == UniqueID then
 			exists = true
-			value = index
+			X = index
 		end
 	end
 	if exists == true then
-		data[index][1] = Nickname -- Changing the Nickname
+		data[X][1] = Nickname -- Changing the Nickname
 		updateFile()
 	else
 		local error = ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, "Error: Client does not exist! To create an client simply run \"info add <Line>\"", ClientID)
 		if error ~= ts3errors.ERROR_ok then
-			print("Error sending message: " .. error)
+			xprint("Error sending message: " .. error)
 		end
 	end
 end
 
 local function deleteLine(ClientID, UniqueID, numberLine)
-	if tonumber(numberLine) >= 1 
-	local value = 0
+	local X = 0
 	local exists = false
 	for index, value in pairs(data) do
 		if value[2] == UniqueID then
 			exists = true
-			value = index
+			X = index
 		end
 	end
-	if exists == true and tonumber(numberLine) >= 1 and tonumber(numberLine) <= #data[index][3] then
-		table.remove(data[index][3], tonumber(numberLine))
+	if exists == true and tonumber(numberLine) >= 1 and tonumber(numberLine) <= #data[X][3] then
+		table.remove(data[X][3], tonumber(numberLine))
 		updateFile()
 	elseif exists == false then
 		local error = ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, "Error: Client does not exist! To create an client simply run \"info add <Line>\"", ClientID)
 		if error ~= ts3errors.ERROR_ok then
-			print("Error sending message: " .. error)
+			xprint("Error sending message: " .. error)
 		end
-	elseif tonumber(numberLine) < 1 or tonumber(numberLine) > #data[index][3]then
+	elseif tonumber(numberLine) < 1 or tonumber(numberLine) > #data[X][3]then
 		local error = ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, "Error: Line does not exist!", ClientID)
 		if error ~= ts3errors.ERROR_ok then
-			print("Error sending message: " .. error)
+			xprint("Error sending message: " .. error)
 		end
 	end
 end
+
+local function deleteClient(ClientID, UniqueID, Msg)
+	if string.lower(Msg) == "yes" then
+		local X = 0
+		local exists = false
+		for index, value in pairs(data) do
+			if value[2] == UniqueID then
+				exists = true
+				X = index
+			end
+		end
+		if exists == true then
+			data[X][3][#data[X][3]+1] = Line -- Adding one line
+			data[X][1] = Nickname -- Changing the Nickname
+			updateFile()
+		else
+			data[#data+1]={Nickname, UniqueID, {Line}} -- Creating a new User
+		end
+		
+		
+		
+		
+		
+		
+	else
+		local error = ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, "Are you sure, that you want to erase yourself in the DB? If you are run \"info delme yes\"", ClientID)
+		if error ~= ts3errors.ERROR_ok then
+			xprint("Error sending message: " .. error)
+		end
+	end
+end
+
+
+
+
+
+
 
 
 
