@@ -105,9 +105,27 @@ end
 local function updateFile()
 	
 end
-
+--table structure: data{{Nickname, UniqueID, {Line1, Line2, Line3, ...}},{Nickname, UniqueID, {Line1, Line2, Line3, ...}}
+--data.dat
+--L1:{N:"Nickname",U:"UniqueID",L:{1:"Line1",2:"Line2",3:"Line3"}}
+--L9:
 local function loadFile()
-
+	for --datei laden lines
+		data[i]={"Nickname", "UniqueID", {"Line"}}
+		Pos1, x = string.find(Line, 'N:"')
+		x, Pos2 = string.find(Line, '",')
+		if Pos1 ~= nil and Pos2 ~= nil then
+			local Nickname = string.sub(Line, tonumber(Pos1+3), tonumber(Pos2-2))
+			data[i][1] = Nickname
+		end
+		Pos1, x = string.find(Line, 'U:"')
+		x, Pos2 = string.find(Line, '",', Pos2)
+		if Pos1 ~= nil and Pos2 ~= nil then
+			local UniqueID = string.sub(Line, tonumber(Pos1+3), tonumber(Pos2-2))
+			data[i][2] = UniqueID
+		end
+		--Linien mussen noch geldaden werden
+	end
 end
 
 local function updateNick(ClientID, Nickname, UniqueID)
