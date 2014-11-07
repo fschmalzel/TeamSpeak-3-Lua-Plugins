@@ -24,7 +24,7 @@ updateNick()			Changing Nickname 100% Benachrichtigungen fehlen
 deleteLine()			Deleting one Line 100% Benachrichtigungen fehlen
 onTextMessageEvent() Chatcommands 100% Benachrichtigungen fehlen
 updateFile()			Updating the File 0%
-loadFile()				Loading the File 0%
+loadFile()				Loading the File 50%
 deleteClient()			Deleting an Client out of the table 100% Benachrichtigungen fehlen
 ]]
 
@@ -107,7 +107,7 @@ local function updateFile()
 end
 --table structure: data{{Nickname, UniqueID, {Line1, Line2, Line3, ...}},{Nickname, UniqueID, {Line1, Line2, Line3, ...}}
 --data.dat
---L1:{N:"Nickname",U:"UniqueID",L:{1:"Line1",2:"Line2",3:"Line3"}}
+--L1:N:"Nickname",U:"UniqueID",L:{1:"Line1",2:"Line2",3:"Line3"}
 --L9:
 local function loadFile()
 	for --datei laden lines
