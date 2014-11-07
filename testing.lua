@@ -40,16 +40,16 @@ end
 
 function onTextMessageEvent(serverConnectionHandlerID, targetMode, toID, fromID, fromName, fromUniqueIdentifier, message, ffIgnored)
 	print("Lua: onTextMessageEvent: " .. serverConnectionHandlerID .. " " .. targetMode .. " " .. toID .. " " .. fromID .. " " .. fromName .. " " .. fromUniqueIdentifier .. " " .. message .. " " .. ffIgnored)
-	if string.lower(string.sub(message, 1, 4) == "info" then --     info add
-		if string.lower(string.sub(message, 6, 8) == "add" then --   1234567890
-			save(fromName, fromUniqueIdentifier, string.sub(message, 10, string.len(message))
-		elseif string.lower(string.sub(message, 6, 9) == "show" then
-			show(fromID, string.sub(message, 11, string.len(message))
-		elseif string.lower(string.sub(message, 6, 11) == "update" then
+	if string.lower(string.sub(message, 1, 4)) == "info" then --     info add
+		if string.lower(string.sub(message, 6, 8)) == "add" then --   1234567890
+			save(fromName, fromUniqueIdentifier, string.sub(message, 10, string.len(message)))
+		elseif string.lower(string.sub(message, 6, 9)) == "show" then
+			show(fromID, string.sub(message, 11, string.len(message)))
+		elseif string.lower(string.sub(message, 6, 11)) == "update" then
 			updateNick(fromID, fromName, fromUniqueIdentifier)
-		elseif string.lower(string.sub(message, 6, 12) == "delline" then
+		elseif string.lower(string.sub(message, 6, 12)) == "delline" then
 			deleteLine(fromID, fromUniqueIdentifier, string.sub(message, 14, string.len(message)))
-		elseif string.lower(string.sub(message, 6, 10) == "delme" then
+		elseif string.lower(string.sub(message, 6, 10)) == "delme" then
 			deleteClient(fromID, fromUniqueIdentifier, string.sub(message, 12, string.len(message)))
 		end
 	end	
