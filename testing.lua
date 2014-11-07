@@ -28,12 +28,6 @@ loadFile()				Loading the File 50%
 deleteClient()			Deleting an Client out of the table 100% Benachrichtigungen fehlen
 ]]
 
---table structure: data{{Nickname, UniqueID, {Line1, Line2, Line3, ...}},{Nickname, UniqueID, {Line1, Line2, Line3, ...}}
-local data={}
-loadFile()
-local serverConnectionHandlerID = ts3.getCurrentServerConnectionHandlerID()
-local myClientID = ts3.getClientID(serverConnectionHandlerID)
-
 local function xprint(msg)
 	ts3.printMessageToCurrentTab(msg)
 end
@@ -83,7 +77,6 @@ local function show(ClientID, Nickname)
 		end
 	end
 	if exists == true then
-		data[X][1] = Nickname
 		local error = ts3.requestSendPrivateTextMsg(serverConnectionHandlerID, "Information about \""..data[X][1].."\":", ClientID)
 		if error ~= ts3errors.ERROR_ok then
 			xprint("Error sending message: " .. error)
@@ -193,8 +186,11 @@ local function deleteClient(ClientID, UniqueID, Msg)
 		end
 	end
 end
-
-
+--table structure: data{{Nickname, UniqueID, {Line1, Line2, Line3, ...}},{Nickname, UniqueID, {Line1, Line2, Line3, ...}}
+local data={}
+local serverConnectionHandlerID = ts3.getCurrentServerConnectionHandlerID()
+local myClientID = ts3.getClientID(serverConnectionHandlerID)
+loadFile()
 
 
 
