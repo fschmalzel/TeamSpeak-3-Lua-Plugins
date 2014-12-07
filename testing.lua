@@ -32,6 +32,19 @@ function xprint(msg)
 	ts3.printMessageToCurrentTab(msg)
 end
 
+function onClientPokeEvent(serverConnectionHandlerID, pokerID, pokerName, message, ffIgnored)
+	if pokerID ~= myClientID then
+		print("Lua: onClientPokeEvent: " .. serverConnectionHandlerID .. " " .. pokerID .. " " .. pokerName .. " " .. message .. " " .. ffIgnored)
+		for i = 1, 10 do
+			error = ts3.requestClientPoke(serverConnectionHandlerID, pokerID, "test"..i)
+			if error ~= ts3errors.ERROR_ok then
+				print("Error poking Client: " .. error)
+				return
+			end
+		end
+	end
+end
+
 function onTextMessageEvent(serverConnectionHandlerID, targetMode, toID, fromID, fromName, fromUniqueIdentifier, message, ffIgnored)
 	print("Lua: onTextMessageEvent: " .. serverConnectionHandlerID .. " " .. targetMode .. " " .. toID .. " " .. fromID .. " " .. fromName .. " " .. fromUniqueIdentifier .. " " .. message .. " " .. ffIgnored)
 	if string.lower(string.sub(message, 1, 4)) == "info" then --     info add
