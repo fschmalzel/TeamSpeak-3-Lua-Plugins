@@ -7,7 +7,7 @@ local function onPluginCommandEvent(serverConnectionHandlerID, pluginName, plugi
 	print("xlife: onPluginCommandEvent: " .. serverConnectionHandlerID .. " " .. pluginName .. " " .. pluginCommand)
 end
 
-xlife_events = {
+xlife_mp_events = {
 	onTextMessageEvent = onTextMessageEvent,
 	onPluginCommandEvent = onPluginCommandEvent
 }
