@@ -22,6 +22,8 @@ function onTextMessageEvent(serverConnectionHandlerID, targetMode, toID, fromID,
 			deleteLine(fromID, fromUniqueIdentifier, string.sub(message, 14, string.len(message)))
 		elseif string.lower(string.sub(message, 6, 10)) == "delme" then
 			deleteClient(fromID, fromUniqueIdentifier, string.sub(message, 12, string.len(message)))
+		elseif string.lower(string.sub(message, 6, 9)) == "list" then
+			list(fromID, fromUniqueIdentifier, string.sub(message, 11, string.len(message)))
 		else
 			help(fromID)
 		end
@@ -36,6 +38,7 @@ end
 
 function help(ClientID)
 	Pvtmsg("Help for the Info Lua Script:", ClientID)
+	Pvtmsg('"info list" <Site>: Lists all Clients!', ClientID)
 	Pvtmsg('"info add <LineInfo>": Adds a new line to your description!', ClientID)
 	Pvtmsg('"info editline <NumberLine> <LineInfo>": Edits a line of your description!', ClientID)
 	Pvtmsg('"info show <ClientName>": Displays the description of an client! Not case sensitive!', ClientID)
@@ -132,6 +135,45 @@ function show(ClientID, Nickname)
 		Pvtmsg("══════════════════════════════════END══════════════════════════════════", ClientID)
 	else
 		Pvtmsg("Error: Client does not exist! To create an client simply run \"info add <Line>\"", ClientID)
+	end
+end
+
+function list(ClientID, UniqueID, txt)
+	site = tonumber(txt)
+	loadFile()
+	maxsites = math.ceil(#data/10)
+	if site <= maxsites and site > 0 then
+		head = "[B]Site: " .. site .. "/" .. maxsites .. "[/B]"
+		outstr = ""
+		for i = 1, math.ceil((71 - (string.len(head) - 7)) / 2 ) + 2 do
+			outstr = outstr.."═"
+		end
+		outstr = outstr..head
+		for i = 1, math.floor((71 - (string.len(head) - 7)) / 2 ) + 2 do
+			outstr = outstr.."═"
+		end
+		Pvtmsg(outstr, ClientID)
+		--  i = 1, 10
+		--  i = 11, 20 
+		for i = 10 * site - 9, 10 * site do
+			if i <= #data then
+				outstr = "| Nick: " .. data[i][1]
+				for i2 = 1, (40 - string.len(outstr)) * 2 do
+					outstr = outstr.." "
+				end
+				outstr = outstr .. "| UID: " .. data[i][2]
+				for i2 = 1, (81 - string.len(outstr)) * 2 do
+					outstr = outstr .. " "
+				end
+				outstr = outstr .. "|"
+				Pvtmsg(outstr, ClientID)
+			end
+		end
+		Pvtmsg("══════════════════════════════════END══════════════════════════════════", ClientID)
+	elseif site > maxsites then
+		Pvtmsg("There is no site: " .. site .. "!", ClientID)
+	else
+		Pvtmsg("There is no site: " .. site .. "!", ClientID)
 	end
 end
 
