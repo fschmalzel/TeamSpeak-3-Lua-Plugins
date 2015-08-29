@@ -77,6 +77,7 @@ function mamo(serverConnectionHandlerID, password)
 			end
 		end
 	end
+	xprint("┌───────────────────────────────────────────────────────────────────────────────────────────────")
 	for i = 1, #Clients do
 		if Clients[i] ~= myClientID then
 			local ChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, Clients[i])
@@ -96,7 +97,7 @@ function mamo(serverConnectionHandlerID, password)
 				return
 			end
 			if poke == true then pokestring = "Ja" else pokestring = "Nein" end
-			xprint("ID: "..tostring(Clients[i]).." | Nickname: "..Nickname.." | Gemovet: "..pokestring) 
+			xprint("│ ID: "..tostring(Clients[i]).." | Nickname: "..Nickname.." | Gemovet: "..pokestring) 
 			if poke == true then	
 				local myChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, myClientID)
 				if password ~= nil then
@@ -110,7 +111,11 @@ function mamo(serverConnectionHandlerID, password)
 				end
 			end
 		end
+		if (math.floor(i / 5)) == (i / 5) and #Clients ~= i then
+			xprint("├───────────────────────────────────────────────────────────────────────────────────────────────")
+		end
 	end
+	xprint("└───────────────────────────────────────────────────────────────────────────────────────────────")
 end
 
 function ChID(serverConnectionHandlerID)
@@ -169,6 +174,7 @@ function mapo(serverConnectionHandlerID, ...)
 				end
 			end
 		end
+		xprint("┌───────────────────────────────────────────────────────────────────────────────────────────────")
 		for i = 1, #Clients do
 			if Clients[i] ~= myClientID then
 				local ChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, Clients[i])
@@ -188,7 +194,7 @@ function mapo(serverConnectionHandlerID, ...)
 					return
 				end
 				if poke == true then pokestring = "Ja" else pokestring = "Nein" end
-				xprint("ID: "..tostring(Clients[i]).." | Nickname: "..Nickname.." | Angestupst: "..pokestring) 
+				xprint("│ ID: "..tostring(Clients[i]).." | Nickname: "..Nickname.." | Angestupst: "..pokestring) 
 				if poke == true then
 					local error = ts3.requestClientPoke(serverConnectionHandlerID, Clients[i], argMsg)
 					if error ~= ts3errors.ERROR_ok then
@@ -198,11 +204,15 @@ function mapo(serverConnectionHandlerID, ...)
 				end
 			end
 		end
+		if (math.floor(i / 5)) == (i / 5) and #Clients ~= i then
+			xprint("├───────────────────────────────────────────────────────────────────────────────────────────────")
+		end
 	elseif string.len(argMsg) <= 0 then
 		xprint("Nachricht zu kurz")
 	elseif string.len(argMsg) > 100 then
 		xprint("Nachricht zu lang")
 	end
+	xprint("└───────────────────────────────────────────────────────────────────────────────────────────────")
 end
 
 xprint("MassPoke / MassMove initialisiert!")
