@@ -17,7 +17,7 @@ blacklistchannel = {"Aufnahme","(Bespr.)","Watching"}
 
 --Standard:
 --blacklistchannel = {"Aufnahme"}
-blacklistchannel = {"Aufnahme"}
+blacklistchannel = {"Aufnahme", "Cinema", "Radio", "Sonstige"}
 
 require("ts3defs")
 require("ts3errors")
@@ -106,8 +106,8 @@ function mamo(serverConnectionHandlerID, password)
 				xprint("Error getting client nickname: " .. error .. " | ID: " .. Client)
 				return
 			end
-			if poke == true then pokestring = "Ja" else pokestring = "Nein" end
-			xprint("│ ID: " .. formatString(tostring(Client), 4, "0") .. " | Nickname: " .. Nickname .. " | Gemovet: " .. pokestring) 
+			if poke == true then pokestring = "Y" else pokestring = "N" end
+			xprint("│ ID: " .. formatString(tostring(Client), 4, "0") .. " | Moved: " .. pokestring .. " | Nickname: \"" .. Nickname .. "\"") 
 			if poke == true then	
 				local myChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, myClientID)
 				if password ~= nil then
@@ -121,7 +121,7 @@ function mamo(serverConnectionHandlerID, password)
 				end
 			end
 		end
-		if (i % b) == 0 and #Clients ~= i then
+		if (i % 5) == 0 and #Clients ~= i then
 			xprint("├───────────────────────────────────────────────────────────────────────────────────────────────")
 		end
 	end
@@ -185,7 +185,6 @@ function mapo(serverConnectionHandlerID, ...)
 			end
 		end
 		xprint("┌───────────────────────────────────────────────────────────────────────────────────────────────")
-		for i = 1, #Clients do
 		for i, ClientID in ipairs(Clients) do
 			if ClientID ~= myClientID then
 				local ChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, ClientID)
@@ -205,7 +204,7 @@ function mapo(serverConnectionHandlerID, ...)
 					return
 				end
 				if poke == true then pokestring = "Ja" else pokestring = "Nein" end
-				xprint("│ ID: " .. formatString(tostring(Client), 4, "0") .. " | Nickname: " .. Nickname .. " | Angestupst: " .. pokestring) 
+				xprint("│ ID: " .. formatString(tostring(Client), 4, "0") .. " | Poked: " .. pokestring .. " | Nickname: \"" .. Nickname .. "\"") 
 				if poke == true then
 					local error = ts3.requestClientPoke(serverConnectionHandlerID, ClientID, argMsg)
 					if error ~= ts3errors.ERROR_ok then
@@ -215,7 +214,7 @@ function mapo(serverConnectionHandlerID, ...)
 				end
 			end
 		end
-		if (i % b) == 0 and #Clients ~= i then
+		if (i % 5) == 0 and #Clients ~= i then
 			xprint("├───────────────────────────────────────────────────────────────────────────────────────────────")
 		end
 		xprint("└───────────────────────────────────────────────────────────────────────────────────────────────")
