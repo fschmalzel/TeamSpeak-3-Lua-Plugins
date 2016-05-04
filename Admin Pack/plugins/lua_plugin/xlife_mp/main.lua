@@ -17,14 +17,14 @@ blacklistchannel = {"Aufnahme","(Bespr.)","Watching"}
 
 --Standard:
 --blacklistchannel = {"Aufnahme"}
-blacklistchannel = {"Aufnahme", "Cinema", "Radio", "Sonstige"}
+local blacklistchannel = {"Aufnahme", "Cinema", "Radio", "Sonstige"}
 
 require("ts3defs")
 require("ts3errors")
 
-serverConnectionHandlerID = ts3.getCurrentServerConnectionHandlerID()
+local serverConnectionHandlerID = ts3.getCurrentServerConnectionHandlerID()
 
-function xprint(msg)
+local function xprint(msg)
 	local error = ts3.printMessageToCurrentTab(msg)
 	if error ~= ts3errors.ERROR_ok then
 		print("Error printing message: " .. msg)
@@ -34,21 +34,14 @@ end
 
 xprint("xLife MassPoke / MassMove wird geladen.")
 
-function formatString(inputstring, digits, character)
+local function formatString(inputstring, digits, character)
 	for i = 1, digits - string.len(inputstring) do
 		inputstring = character .. inputstring
 	end
 	return inputstring
 end
 
-function test(...)
-	local arg = { ... }
-	for i, v in ipairs(arg) do
-		xprint(tostring(v))
-	end
-end
-
-function mapohelp()
+local function mapohelp()
 	xprint("Konfiguration ist am Anfang der Datei: <TeamSpeak3>\\plugins\\lua_plugin\\xlife_mp\\main.lua")
 	xprint("Befehle:")
 	xprint("Hilfe: '/lua run mapohelp'")
@@ -62,7 +55,7 @@ end
 
 mapohelp()
 
-function mamo(serverConnectionHandlerID, ...)
+local function mamo(serverConnectionHandlerID, ...)
 	local arg = { ... }
 	local password = ""
 	if type(arg[1]) ~= "nil" then
@@ -140,7 +133,7 @@ function mamo(serverConnectionHandlerID, ...)
 	xprint("└───────────────────────────────────────────────────────────────────────────────────────────────")
 end
 
-function ChID(serverConnectionHandlerID)
+local function ChID(serverConnectionHandlerID)
 	local myClientID, error = ts3.getClientID(serverConnectionHandlerID)
 	if error ~= ts3errors.ERROR_ok then
 		xprint("Error getting own ID: " .. error)
@@ -159,7 +152,7 @@ function ChID(serverConnectionHandlerID)
 	xprint("ID: "..channelID.." | "..channelName)
 end
 
-function mapo(serverConnectionHandlerID, ...)
+local function mapo(serverConnectionHandlerID, ...)
 	local arg = { ... }
 	local myClientID = ts3.getClientID(serverConnectionHandlerID)
 	local Clients, error = ts3.getClientList(serverConnectionHandlerID)
