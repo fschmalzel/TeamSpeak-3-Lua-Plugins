@@ -24,12 +24,22 @@ require("ts3errors")
 
 serverConnectionHandlerID = ts3.getCurrentServerConnectionHandlerID()
 
-
 function xprint(msg)
-	ts3.printMessageToCurrentTab(msg)
+	local error = ts3.printMessageToCurrentTab(msg)
+	if error ~= ts3errors.ERROR_ok then
+		print("Error printing message: " .. msg)
+		return
+	end
 end
 
 xprint("xLife MassPoke / MassMove wird geladen.")
+
+function formatString(inputstring, digits, character)
+	for i = 1, digits - string.len(inputstring) do
+		inputstring = character .. inputstring
+	end
+	return inputstring
+end
 
 function mapohelp()
 	xprint("Konfiguration ist am Anfang der Datei: <TeamSpeak3>\\plugins\\lua_plugin\\xlife_mp\\main.lua")
@@ -40,7 +50,7 @@ function mapohelp()
 	xprint("Massenmoven: '/lua run mamo <Channel Passwort>'")
 	xprint("z.B. /lua run mamo SuperSecretPass")
 	xprint("z.B. /lua run mamo")
-	xprint("© xLife | Felix")
+	xprint("© xLifeHD@gmail.com")
 end
 
 mapohelp()
@@ -62,25 +72,25 @@ function mamo(serverConnectionHandlerID, password)
 	end
 	local ChannelNames = {}
 	local blacklistmp = {}
-	for i = 1, #ChannelIDs do
-		local ChannelName, error = ts3.getChannelVariableAsString(serverConnectionHandlerID, ChannelIDs[i], ts3defs.ChannelProperties.CHANNEL_NAME)
+	for i, ChannelID in ipairs(ChannelIDs) do
+		local ChannelName, error = ts3.getChannelVariableAsString(serverConnectionHandlerID, ChannelID, ts3defs.ChannelProperties.CHANNEL_NAME)
 		if error ~= ts3errors.ERROR_ok then
 			xprint("Error getting channel name: " .. error)
 			return
 		end
-		ChannelNames[#ChannelNames+1] = {ChannelIDs[i], ChannelName}
+		table.insert(ChannelNames, {ChannelID, ChannelName})
 	end
-	for i,v in ipairs(ChannelNames) do
-		for i2,v2 in ipairs(blacklistchannel) do
-			if tostring(string.find(string.lower(v[2]), string.lower(v2))) ~= "nil" then
-				blacklistmp[#blacklistmp+1] = v[1]
+	for i, ChannelName in ipairs(ChannelNames) do
+		for i2, blacklistName in ipairs(blacklistchannel) do
+			if tostring(string.find(string.lower(ChannelName[2]), string.lower(blacklistName))) ~= "nil" then
+				table.insert(blacklistmp, ChannelName[1])
 			end
 		end
 	end
 	xprint("┌───────────────────────────────────────────────────────────────────────────────────────────────")
-	for i = 1, #Clients do
-		if Clients[i] ~= myClientID then
-			local ChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, Clients[i])
+	for i, Client in ipairs(Clients) do
+		if Client ~= myClientID then
+			local ChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, Client)
 			if error ~= ts3errors.ERROR_ok then
 				xprint("Error getting own channel: " .. error)
 				return
@@ -91,19 +101,19 @@ function mamo(serverConnectionHandlerID, password)
 					poke = false
 				end
 			end
-			local Nickname, error = ts3.getClientVariableAsString(serverConnectionHandlerID, Clients[i], ts3defs.ClientProperties.CLIENT_NICKNAME)
+			local Nickname, error = ts3.getClientVariableAsString(serverConnectionHandlerID, Client, ts3defs.ClientProperties.CLIENT_NICKNAME)
 			if error ~= ts3errors.ERROR_ok then
-				xprint("Error getting client nickname: " .. error .. " | ID: " .. Clients[i])
+				xprint("Error getting client nickname: " .. error .. " | ID: " .. Client)
 				return
 			end
 			if poke == true then pokestring = "Ja" else pokestring = "Nein" end
-			xprint("│ ID: "..tostring(Clients[i]).." | Nickname: "..Nickname.." | Gemovet: "..pokestring) 
+			xprint("│ ID: " .. formatString(tostring(Client), 4, "0") .. " | Nickname: " .. Nickname .. " | Gemovet: " .. pokestring) 
 			if poke == true then	
 				local myChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, myClientID)
 				if password ~= nil then
-					local error = ts3.requestClientMove(serverConnectionHandlerID, Clients[i], myChannelID, password)
+					local error = ts3.requestClientMove(serverConnectionHandlerID, Client, myChannelID, password)
 				else
-					local error = ts3.requestClientMove(serverConnectionHandlerID, Clients[i], myChannelID, "")
+					local error = ts3.requestClientMove(serverConnectionHandlerID, Client, myChannelID, "")
 				end
 				if error ~= ts3errors.ERROR_ok then
 					xprint("Error moving: " .. error)
@@ -111,7 +121,7 @@ function mamo(serverConnectionHandlerID, password)
 				end
 			end
 		end
-		if (math.floor(i / 5)) == (i / 5) and #Clients ~= i then
+		if (i % b) == 0 and #Clients ~= i then
 			xprint("├───────────────────────────────────────────────────────────────────────────────────────────────")
 		end
 	end
@@ -121,17 +131,17 @@ end
 function ChID(serverConnectionHandlerID)
 	local myClientID, error = ts3.getClientID(serverConnectionHandlerID)
 	if error ~= ts3errors.ERROR_ok then
-		print("Error getting own ID: " .. error)
+		xprint("Error getting own ID: " .. error)
 		return
 	end
 	local channelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, myClientID)
 	if error ~= ts3errors.ERROR_ok then
-		print("Error getting own channel: " .. error)
+		xprint("Error getting own channel: " .. error)
 		return
 	end
 	local channelName, error = ts3.getChannelVariableAsString(serverConnectionHandlerID, channelID, ts3defs.ChannelProperties.CHANNEL_NAME)
 	if error ~= ts3errors.ERROR_ok then
-		print("Error getting channel name: " .. error)
+		xprint("Error getting channel name: " .. error)
 		return
 	end
 	xprint("ID: "..channelID.." | "..channelName)
@@ -176,8 +186,9 @@ function mapo(serverConnectionHandlerID, ...)
 		end
 		xprint("┌───────────────────────────────────────────────────────────────────────────────────────────────")
 		for i = 1, #Clients do
-			if Clients[i] ~= myClientID then
-				local ChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, Clients[i])
+		for i, ClientID in ipairs(Clients) do
+			if ClientID ~= myClientID then
+				local ChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, ClientID)
 				if error ~= ts3errors.ERROR_ok then
 					xprint("Error getting own channel: " .. error)
 					return
@@ -188,15 +199,15 @@ function mapo(serverConnectionHandlerID, ...)
 						poke = false
 					end
 				end
-				local Nickname, error = ts3.getClientVariableAsString(serverConnectionHandlerID, Clients[i], ts3defs.ClientProperties.CLIENT_NICKNAME)
+				local Nickname, error = ts3.getClientVariableAsString(serverConnectionHandlerID, ClientID, ts3defs.ClientProperties.CLIENT_NICKNAME)
 				if error ~= ts3errors.ERROR_ok then
-					xprint("Error getting client nickname: " .. error .. " | ID: " .. Clients[i])
+					xprint("Error getting client nickname: " .. error .. " | ID: " .. ClientID)
 					return
 				end
 				if poke == true then pokestring = "Ja" else pokestring = "Nein" end
-				xprint("│ ID: "..tostring(Clients[i]).." | Nickname: "..Nickname.." | Angestupst: "..pokestring) 
+				xprint("│ ID: " .. formatString(tostring(Client), 4, "0") .. " | Nickname: " .. Nickname .. " | Angestupst: " .. pokestring) 
 				if poke == true then
-					local error = ts3.requestClientPoke(serverConnectionHandlerID, Clients[i], argMsg)
+					local error = ts3.requestClientPoke(serverConnectionHandlerID, ClientID, argMsg)
 					if error ~= ts3errors.ERROR_ok then
 						xprint("Error poking: " .. error)
 						return
@@ -204,15 +215,15 @@ function mapo(serverConnectionHandlerID, ...)
 				end
 			end
 		end
-		if (math.floor(i / 5)) == (i / 5) and #Clients ~= i then
+		if (i % b) == 0 and #Clients ~= i then
 			xprint("├───────────────────────────────────────────────────────────────────────────────────────────────")
 		end
+		xprint("└───────────────────────────────────────────────────────────────────────────────────────────────")
 	elseif string.len(argMsg) <= 0 then
-		xprint("Nachricht zu kurz")
+		xprint("Error message too short")
 	elseif string.len(argMsg) > 100 then
-		xprint("Nachricht zu lang")
+		xprint("Error message too long")
 	end
-	xprint("└───────────────────────────────────────────────────────────────────────────────────────────────")
 end
 
-xprint("MassPoke / MassMove initialisiert!")
+xprint("MassPoke / MassMove initialised!")
