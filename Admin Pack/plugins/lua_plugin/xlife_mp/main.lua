@@ -41,6 +41,13 @@ function formatString(inputstring, digits, character)
 	return inputstring
 end
 
+function test(...)
+	local arg = { ... }
+	for i, v in ipairs(arg) do
+		xprint(tostring(v))
+	end
+end
+
 function mapohelp()
 	xprint("Konfiguration ist am Anfang der Datei: <TeamSpeak3>\\plugins\\lua_plugin\\xlife_mp\\main.lua")
 	xprint("Befehle:")
@@ -55,7 +62,12 @@ end
 
 mapohelp()
 
-function mamo(serverConnectionHandlerID, password)
+function mamo(serverConnectionHandlerID, ...)
+	local arg = { ... }
+	local password = ""
+	if type(arg[1]) ~= "nil" then
+		password = arg[1]
+	end
 	local myClientID = ts3.getClientID(serverConnectionHandlerID)
 	local Clients, error = ts3.getClientList(serverConnectionHandlerID)
 	if error == ts3errors.ERROR_not_connected then
@@ -88,9 +100,9 @@ function mamo(serverConnectionHandlerID, password)
 		end
 	end
 	xprint("┌───────────────────────────────────────────────────────────────────────────────────────────────")
-	for i, Client in ipairs(Clients) do
-		if Client ~= myClientID then
-			local ChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, Client)
+	for i, ClientID in ipairs(Clients) do
+		if ClientID ~= myClientID then
+			local ChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, ClientID)
 			if error ~= ts3errors.ERROR_ok then
 				xprint("Error getting own channel: " .. error)
 				return
@@ -101,19 +113,19 @@ function mamo(serverConnectionHandlerID, password)
 					poke = false
 				end
 			end
-			local Nickname, error = ts3.getClientVariableAsString(serverConnectionHandlerID, Client, ts3defs.ClientProperties.CLIENT_NICKNAME)
+			local Nickname, error = ts3.getClientVariableAsString(serverConnectionHandlerID, ClientID, ts3defs.ClientProperties.CLIENT_NICKNAME)
 			if error ~= ts3errors.ERROR_ok then
-				xprint("Error getting client nickname: " .. error .. " | ID: " .. Client)
+				xprint("Error getting client nickname: " .. error .. " | ID: " .. ClientID)
 				return
 			end
 			if poke == true then pokestring = "Y" else pokestring = "N" end
-			xprint("│ ID: " .. formatString(tostring(Client), 4, "0") .. " | Moved: " .. pokestring .. " | Nickname: \"" .. Nickname .. "\"") 
+			xprint("│ ID: " .. formatString(tostring(ClientID), 4, "0") .. " | Moved: " .. pokestring .. " | Nickname: \"" .. Nickname .. "\"") 
 			if poke == true then	
 				local myChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, myClientID)
 				if password ~= nil then
-					local error = ts3.requestClientMove(serverConnectionHandlerID, Client, myChannelID, password)
+					local error = ts3.requestClientMove(serverConnectionHandlerID, ClientID, myChannelID, password)
 				else
-					local error = ts3.requestClientMove(serverConnectionHandlerID, Client, myChannelID, "")
+					local error = ts3.requestClientMove(serverConnectionHandlerID, ClientID, myChannelID, "")
 				end
 				if error ~= ts3errors.ERROR_ok then
 					xprint("Error moving: " .. error)
@@ -148,6 +160,7 @@ function ChID(serverConnectionHandlerID)
 end
 
 function mapo(serverConnectionHandlerID, ...)
+	local arg = { ... }
 	local myClientID = ts3.getClientID(serverConnectionHandlerID)
 	local Clients, error = ts3.getClientList(serverConnectionHandlerID)
 	if error == ts3errors.ERROR_not_connected then
@@ -193,7 +206,7 @@ function mapo(serverConnectionHandlerID, ...)
 					return
 				end
 				poke = true
-				for i,v in ipairs(blacklistmp) do
+				for i, v in ipairs(blacklistmp) do
 					if v == ChannelID then
 						poke = false
 					end
@@ -203,8 +216,8 @@ function mapo(serverConnectionHandlerID, ...)
 					xprint("Error getting client nickname: " .. error .. " | ID: " .. ClientID)
 					return
 				end
-				if poke == true then pokestring = "Ja" else pokestring = "Nein" end
-				xprint("│ ID: " .. formatString(tostring(Client), 4, "0") .. " | Poked: " .. pokestring .. " | Nickname: \"" .. Nickname .. "\"") 
+				if poke == true then pokestring = "Y" else pokestring = "N" end
+				xprint("│ ID: " .. formatString(tostring(ClientID), 4, "0") .. " | Poked: " .. pokestring .. " | Nickname: \"" .. Nickname .. "\"") 
 				if poke == true then
 					local error = ts3.requestClientPoke(serverConnectionHandlerID, ClientID, argMsg)
 					if error ~= ts3errors.ERROR_ok then
