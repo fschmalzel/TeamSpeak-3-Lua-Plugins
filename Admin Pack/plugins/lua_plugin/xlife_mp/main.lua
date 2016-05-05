@@ -1,9 +1,9 @@
 --[[ 
-Jeder Client der in einem Channel ist, dessen Channelnamen etwas von der Blacklist beinhaltet, wird nicht angestupst.
+Jeder Client der in einem Channel ist, dessen Channelnamen etwas von der Blacklist beinhaltet, wird nicht angestupst / gemoved.
 z.B. blacklistchannel = {"Aufnahme"}
-Alle Clients die in den Aufnahme Channeln sind werden nicht angestupst.
+Alle Clients die in den Aufnahme Channeln sind werden nicht angestupst / gemoved.
 z.B. blacklistchannel = {"Aufnahme","Watching"}
-Alle Clients die in den Aufnahme Channeln oder Community Watching / Member Watching sind werden nicht angestupst.
+Alle Clients die in den Aufnahme Channeln oder Community Watching / Member Watching sind werden nicht angestupst / gemoved.
 Weitere Namen müssen wie folgt hinzu gefügt werden. z.B. (Bespr.)
 1. Man setzt es in Anführungszeichen: "(Bespr.)"
 2. Man setzt ein Koma davor: ,"(Bespr.)"
@@ -12,12 +12,27 @@ blacklistchannel = {"Aufnahme","(Bespr.)"}
 
 Das wiederholt man falls man andere Channel hinzufügen will:
 blacklistchannel = {"Aufnahme","(Bespr.)","Watching"}
+
+Jeder Client dessen Name etwas von der Blacklist beinhaltet, wird nicht angestupst / gemoved.
+z.B. blacklistClientNames = {"bot"}
+Alle Clients die bot im Namen haben werden nicht angestupst / gemoved.
+z.B. blacklistClientNames = {"bot","Alfred"}
+Alle Clients die bot oder Alfred im Namen haben werden nicht angestupst / gemoved.
+Weitere Namen müssen wie folgt hinzu gefügt werden. z.B. Musik
+1. Man setzt es in Anführungszeichen: "Musik"
+2. Man setzt ein Koma davor: ,"Musik"
+3. Man fügt es der Blacklist hinzu: 
+blacklistClientNames = {"bot","Musik"}
+
+Das wiederholt man falls man andere Namen hinzufügen will:
+blacklistClientNames = {"Musik", "Music", "bot", "Alfred", "Houseband"}
 ]]--
 
 
 --Standard:
 --blacklistchannel = {"Aufnahme"}
 local blacklistchannel = {"Aufnahme", "Bespr"}
+local blacklistClientNames = {"Musik", "Music", "bot", "Alfred", "Houseband"}
 
 require("ts3defs")
 require("ts3errors")
@@ -97,7 +112,7 @@ function mamo(serverConnectionHandlerID, ...)
 				xprint("Error getting own channel: " .. error)
 				return
 			end
-			poke = true
+			local poke = true
 			for i,v in ipairs(blacklistmp) do
 				if v == ChannelID then
 					poke = false
@@ -108,6 +123,12 @@ function mamo(serverConnectionHandlerID, ...)
 				xprint("Error getting client nickname: " .. error .. " | ID: " .. ClientID)
 				return
 			end
+			for i, blockedName in ipairs(blacklistClientNames) do
+				if tostring(string.find(string.lower(Nickname), string.lower(blockedName))) ~= "nil" then
+					poke = false
+				end
+			end
+			local pokestring
 			if poke == true then pokestring = "Y" else pokestring = "N" end
 			xprint("│ ID: " .. formatString(tostring(ClientID), 4, "0") .. " | Moved: " .. pokestring .. " | Nickname: \"" .. Nickname .. "\"") 
 			if poke == true then	
@@ -176,7 +197,7 @@ function mapo(serverConnectionHandlerID, ...)
 					xprint("Error getting own channel: " .. error)
 					return
 				end
-				poke = true
+				local poke = true
 				for i, v in ipairs(blacklistmp) do
 					if v == ChannelID then
 						poke = false
@@ -186,6 +207,11 @@ function mapo(serverConnectionHandlerID, ...)
 				if error ~= ts3errors.ERROR_ok then
 					xprint("Error getting client nickname: " .. error .. " | ID: " .. ClientID)
 					return
+				end
+				for i, blockedName in ipairs(blacklistClientNames) do
+					if tostring(string.find(string.lower(Nickname), string.lower(blockedName))) ~= "nil" then
+						poke = false
+					end
 				end
 				if poke == true then pokestring = "Y" else pokestring = "N" end
 				xprint("│ ID: " .. formatString(tostring(ClientID), 4, "0") .. " | Poked: " .. pokestring .. " | Nickname: \"" .. Nickname .. "\"") 
