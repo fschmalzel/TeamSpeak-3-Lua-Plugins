@@ -35,13 +35,10 @@ end
 xprint("xLife MassPoke / MassMove wird geladen.")
 
 local function formatString(inputstring, digits, character)
-	for i = 1, digits - string.len(inputstring) do
-		inputstring = character .. inputstring
-	end
-	return inputstring
+	return string.rep(character, digits - string.len(tostring(inputstring))) .. inputstring
 end
 
-local function mapohelp()
+function mapohelp()
 	xprint("Konfiguration ist am Anfang der Datei: <TeamSpeak3>\\plugins\\lua_plugin\\xlife_mp\\main.lua")
 	xprint("Befehle:")
 	xprint("Hilfe: '/lua run mapohelp'")
@@ -55,7 +52,7 @@ end
 
 mapohelp()
 
-local function mamo(serverConnectionHandlerID, ...)
+function mamo(serverConnectionHandlerID, ...)
 	local arg = { ... }
 	local password = ""
 	if type(arg[1]) ~= "nil" then
@@ -133,26 +130,7 @@ local function mamo(serverConnectionHandlerID, ...)
 	xprint("└───────────────────────────────────────────────────────────────────────────────────────────────")
 end
 
-local function ChID(serverConnectionHandlerID)
-	local myClientID, error = ts3.getClientID(serverConnectionHandlerID)
-	if error ~= ts3errors.ERROR_ok then
-		xprint("Error getting own ID: " .. error)
-		return
-	end
-	local channelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, myClientID)
-	if error ~= ts3errors.ERROR_ok then
-		xprint("Error getting own channel: " .. error)
-		return
-	end
-	local channelName, error = ts3.getChannelVariableAsString(serverConnectionHandlerID, channelID, ts3defs.ChannelProperties.CHANNEL_NAME)
-	if error ~= ts3errors.ERROR_ok then
-		xprint("Error getting channel name: " .. error)
-		return
-	end
-	xprint("ID: "..channelID.." | "..channelName)
-end
-
-local function mapo(serverConnectionHandlerID, ...)
+function mapo(serverConnectionHandlerID, ...)
 	local arg = { ... }
 	local myClientID = ts3.getClientID(serverConnectionHandlerID)
 	local Clients, error = ts3.getClientList(serverConnectionHandlerID)
