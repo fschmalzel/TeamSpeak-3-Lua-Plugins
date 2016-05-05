@@ -17,7 +17,7 @@ blacklistchannel = {"Aufnahme","(Bespr.)","Watching"}
 
 --Standard:
 --blacklistchannel = {"Aufnahme"}
-local blacklistchannel = {"Aufnahme", "Cinema", "Radio", "Sonstige"}
+local blacklistchannel = {"Aufnahme", "Bespr"}
 
 require("ts3defs")
 require("ts3errors")
