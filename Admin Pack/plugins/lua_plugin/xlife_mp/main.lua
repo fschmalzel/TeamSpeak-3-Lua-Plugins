@@ -24,15 +24,18 @@ Weitere Namen müssen wie folgt hinzu gefügt werden. z.B. Musik
 3. Man fügt es der Blacklist hinzu: 
 blacklistClientNames = {"bot","Musik"}
 
-Das wiederholt man falls man andere Namen hinzufügen will:
-blacklistClientNames = {"Musik", "Music", "bot", "Alfred", "Houseband"}
-]]--
+Das wiederholt man falls man andere Channel hinzufügen will:
+blacklistClientNames = {"Aufnahme","(Bespr.)","Watching"}
+]]
 
 
 --Standard:
---blacklistchannel = {"Aufnahme"}
-local blacklistchannel = {"Aufnahme", "Bespr"}
-local blacklistClientNames = {"Musik", "Music", "bot", "Alfred", "Houseband"}
+--local blacklistchannel = {"Aufnahme", "Record"}
+--local blacklistChannelMaMoCh = {}
+--local blacklistClientNames = {"Musik", "Music", "bot"}
+local blacklistchannel = {"Aufnahme", "Record"}
+local blacklistChannelMaMoCh = {}
+local blacklistClientNames = {"Musik", "Music", "bot"}
 
 require("ts3defs")
 require("ts3errors")
@@ -54,15 +57,28 @@ local function formatString(inputstring, digits, character)
 end
 
 function mapohelp()
-	xprint("Konfiguration ist am Anfang der Datei: <TeamSpeak3>\\plugins\\lua_plugin\\xlife_mp\\main.lua")
-	xprint("Befehle:")
-	xprint("Hilfe: '/lua run mapohelp'")
-	xprint("Massenanstupsen: '/lua run mapo <Nachricht>'")
-	xprint("z.B. /lua run mapo Event startet in 30 min!")
-	xprint("Massenmoven: '/lua run mamo <Channel Passwort>'")
-	xprint("z.B. /lua run mamo SuperSecretPass")
-	xprint("z.B. /lua run mamo")
-	xprint("© xLifeHD@gmail.com")
+	local helpTable = {"Konfiguration ist am Anfang der Datei: " .. ts3.getPluginPath() .. "lua_plugin/xlife_mp/main.lua",
+	"Befehle:",
+	"Hilfe: '/lua run mapohelp'",
+	"Massenanstupsen: '/lua run mapo <Nachricht>'",
+	"z.B. /lua run mapo Event startet in 30 min!",
+	"Massenmoven: '/lua run mamo <Channel Passwort>'",
+	"z.B. /lua run mamo SuperSecretPass",
+	"z.B. /lua run mamo",
+	"Massenmoven der Clients im eigenen Channel: '/lua run mamoch <ChannelID> <Channel Passwort>",
+	"z.B. /lua run mamoch 1 SuperSecretPass",
+	"z.B. /lua run mamoch 20",
+	"Auflisten der ChannelIDs: '/lua run getchids'",
+	"z.B. /lua run getchids",
+	"© xLifeHD@gmail.com"}
+	xprint("┌───────────────────────────────────────────────────────────────────────────────────────────────")
+	for i, txt in ipairs(helpTable) do
+		xprint("│ " .. txt)
+		if (i % 5) == 0 and #helpTable ~= i then
+			xprint("├───────────────────────────────────────────────────────────────────────────────────────────────")
+		end
+	end
+	xprint("└───────────────────────────────────────────────────────────────────────────────────────────────")
 end
 
 mapohelp()
@@ -124,7 +140,7 @@ function mamo(serverConnectionHandlerID, ...)
 				return
 			end
 			for i, blockedName in ipairs(blacklistClientNames) do
-				if tostring(string.find(string.lower(Nickname), string.lower(blockedName))) ~= "nil" then
+				if string.find(string.lower(Nickname), string.lower(blockedName)) ~= "nil" then
 					poke = false
 				end
 			end
@@ -197,7 +213,7 @@ function mapo(serverConnectionHandlerID, ...)
 					xprint("Error getting own channel: " .. error)
 					return
 				end
-				local poke = true
+				poke = true
 				for i, v in ipairs(blacklistmp) do
 					if v == ChannelID then
 						poke = false
@@ -207,11 +223,6 @@ function mapo(serverConnectionHandlerID, ...)
 				if error ~= ts3errors.ERROR_ok then
 					xprint("Error getting client nickname: " .. error .. " | ID: " .. ClientID)
 					return
-				end
-				for i, blockedName in ipairs(blacklistClientNames) do
-					if tostring(string.find(string.lower(Nickname), string.lower(blockedName))) ~= "nil" then
-						poke = false
-					end
 				end
 				if poke == true then pokestring = "Y" else pokestring = "N" end
 				xprint("│ ID: " .. formatString(tostring(ClientID), 4, "0") .. " | Poked: " .. pokestring .. " | Nickname: \"" .. Nickname .. "\"") 
@@ -233,6 +244,124 @@ function mapo(serverConnectionHandlerID, ...)
 	elseif string.len(argMsg) > 100 then
 		xprint("Error message too long")
 	end
+end
+
+function mamoch(serverConnectionHandlerID, toChannelID, ...)
+
+	local arg = { ... }
+	local password = ""
+	toChannelID = tonumber(toChannelID)
+	
+	if type(arg[1]) ~= "nil" then
+		password = arg[1]
+	end
+	
+	local myClientID, error = ts3.getClientID(serverConnectionHandlerID)
+	
+	if error == ts3errors.ERROR_not_connected then
+		xprint("Not connected")
+		return
+	elseif error ~= ts3errors.ERROR_ok then
+		xprint("Error getting own client ID: " .. error)
+		return
+	end
+	
+	local myChannelID, error = ts3.getChannelOfClient(serverConnectionHandlerID, myClientID)
+	
+	if error == ts3errors.ERROR_not_connected then
+		xprint("Not connected")
+		return
+	elseif error ~= ts3errors.ERROR_ok then
+		xprint("Error getting channel of client: " .. error)
+		return
+	end
+	
+	local myChannelClients, error = ts3.getChannelClientList(serverConnectionHandlerID, myChannelID)
+	
+	if error == ts3errors.ERROR_not_connected then
+		xprint("Not connected")
+		return
+	elseif error ~= ts3errors.ERROR_ok then
+		xprint("Error getting client list: " .. error)
+		return
+	end
+	
+	local blacklistedChannel = false
+	
+	if myChannelID == toChannelID then
+		blacklistedChannel = true
+	else
+		local toChannelName, error = ts3.getChannelVariableAsString(serverConnectionHandlerID, toChannelID, ts3defs.ChannelProperties.CHANNEL_NAME)
+		if error ~= ts3errors.ERROR_ok then
+			xprint("Error getting toChannelName: " .. error)
+			return
+		end
+		for i, blacklistName in ipairs(blacklistChannelMaMoCh) do
+			if tostring (string.find(string.lower(toChannelName), string.lower(blacklistName))) ~= "nil" then
+				blacklistedChannel = true
+			end
+		end
+	end
+	
+	xprint("┌───────────────────────────────────────────────────────────────────────────────────────────────")
+	if blacklistedChannel == false then
+		for i, clientID in ipairs(myChannelClients) do
+			local clientNickname, error = ts3.getClientVariableAsString(serverConnectionHandlerID, clientID, ts3defs.ClientProperties.CLIENT_NICKNAME)
+			if error ~= ts3errors.ERROR_ok then
+				xprint("Error getting client nickname: " .. error .. " | ID: " .. clientID)
+				return
+			end
+			local poke = true
+			for i, blockedName in ipairs(blacklistClientNames) do
+				if string.find(string.lower(clientNickname), string.lower(blockedName)) ~= "nil" then
+					poke = false
+				end
+			end
+			local pokestring
+			if poke == true then pokestring = "Y" else pokestring = "N" end
+			xprint("│ ID: " .. formatString(tostring(clientID), 4, "0") .. " | Moved: " .. pokestring .. " | Nickname: \"" .. clientNickname .. "\"") 
+			if poke == true then
+				if password ~= nil then
+					local error = ts3.requestClientMove(serverConnectionHandlerID, clientID, toChannelID, password)
+				else
+					local error = ts3.requestClientMove(serverConnectionHandlerID, clientID, toChannelID, "")
+				end
+				if error ~= ts3errors.ERROR_ok then
+					xprint("Error moving: " .. error)
+					return
+				end
+			end
+			if (i % 5) == 0 and #myChannelClients ~= i then
+				xprint("├───────────────────────────────────────────────────────────────────────────────────────────────")
+			end
+		end
+	else
+		xprint("│ The desired channel is blacklisted or the channel you are in.")
+	end
+	xprint("└───────────────────────────────────────────────────────────────────────────────────────────────")
+	
+end
+
+function getchids(serverConnectionHandlerID)
+	local ChannelIDs, error = ts3.getChannelList(serverConnectionHandlerID)
+	if error == ts3errors.ERROR_not_connected then
+		xprint("Not connected")
+		return
+	elseif error ~= ts3errors.ERROR_ok then
+		xprint("Error getting ChannelIDs: " .. error)
+		return
+	end
+	local ChannelNames = {}
+	local blacklistmp = {}
+	xprint("┌───────────────────────────────────────────────────────────────────────────────────────────────")
+	for i, ChannelID in ipairs(ChannelIDs) do
+		local ChannelName, error = ts3.getChannelVariableAsString(serverConnectionHandlerID, ChannelID, ts3defs.ChannelProperties.CHANNEL_NAME)
+		xprint("│ CHID: " .. formatString(tostring(ChannelID), 4, "0") .. " | Channelname: \"" .. ChannelName .. "\"")
+		if (i % 5) == 0 and #ChannelIDs ~= i then
+			xprint("├───────────────────────────────────────────────────────────────────────────────────────────────")
+		end
+	end
+	xprint("└───────────────────────────────────────────────────────────────────────────────────────────────")
 end
 
 xprint("MassPoke / MassMove initialised!")
