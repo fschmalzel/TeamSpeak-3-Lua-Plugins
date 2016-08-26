@@ -24,12 +24,12 @@ Weitere Namen müssen wie folgt hinzu gefügt werden. z.B. Musik
 3. Man fügt es der Blacklist hinzu: 
 blacklistClientNames = {"bot","Musik"}
 
-Das wiederholt man falls man andere Channel hinzufügen will:
-blacklistClientNames = {"Aufnahme","(Bespr.)","Watching"}
+Das wiederholt man falls man andere Namen hinzufügen will:
+blacklistClientNames = {"Musik", "Music", "bot", "Alfred", "Houseband"}
 ]]
 
 
---Standard:
+--Default:
 --local blacklistchannel = {"Aufnahme", "Record"}
 --local blacklistChannelMaMoCh = {}
 --local blacklistClientNames = {"Musik", "Music", "bot"}
@@ -140,7 +140,7 @@ function mamo(serverConnectionHandlerID, ...)
 				return
 			end
 			for i, blockedName in ipairs(blacklistClientNames) do
-				if string.find(string.lower(Nickname), string.lower(blockedName)) ~= "nil" then
+				if tostring(string.find(string.lower(Nickname), string.lower(blockedName))) ~= "nil" then
 					poke = false
 				end
 			end
@@ -190,13 +190,13 @@ function mapo(serverConnectionHandlerID, ...)
 		end
 		local ChannelNames = {}
 		local blacklistmp = {}
-		for i = 1, #ChannelIDs do
-			local ChannelName, error = ts3.getChannelVariableAsString(serverConnectionHandlerID, ChannelIDs[i], ts3defs.ChannelProperties.CHANNEL_NAME)
+		for i, v in pairs(ChannelIDs) do
+			local ChannelName, error = ts3.getChannelVariableAsString(serverConnectionHandlerID, v, ts3defs.ChannelProperties.CHANNEL_NAME)
 			if error ~= ts3errors.ERROR_ok then
 				xprint("Error getting channel name: " .. error)
 				return
 			end
-			ChannelNames[#ChannelNames+1] = {ChannelIDs[i], ChannelName}
+			ChannelNames[#ChannelNames+1] = {v, ChannelName}
 		end
 		for i,v in ipairs(ChannelNames) do
 			for i2,v2 in ipairs(blacklistchannel) do
@@ -213,7 +213,7 @@ function mapo(serverConnectionHandlerID, ...)
 					xprint("Error getting own channel: " .. error)
 					return
 				end
-				poke = true
+				local poke = true
 				for i, v in ipairs(blacklistmp) do
 					if v == ChannelID then
 						poke = false
@@ -223,6 +223,11 @@ function mapo(serverConnectionHandlerID, ...)
 				if error ~= ts3errors.ERROR_ok then
 					xprint("Error getting client nickname: " .. error .. " | ID: " .. ClientID)
 					return
+				end
+				for i2, blockedName in ipairs(blacklistClientNames) do
+					if tostring(string.find(string.lower(Nickname), string.lower(blockedName))) ~= "nil" then
+						poke = false
+					end
 				end
 				if poke == true then pokestring = "Y" else pokestring = "N" end
 				xprint("│ ID: " .. formatString(tostring(ClientID), 4, "0") .. " | Poked: " .. pokestring .. " | Nickname: \"" .. Nickname .. "\"") 
