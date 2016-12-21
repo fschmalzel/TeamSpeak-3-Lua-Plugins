@@ -94,7 +94,9 @@ local function errorCheck(error, msg)
 end
 
 local function replaceL(str)
-	return string.gsub(string.gsub(str, "|", "i"), "l", "i")
+	local null
+	str, null = string.gsub(string.gsub(string.gsub(str, "|", "i"), "l", "i"), "_", " ")
+	return str
 end
 
 local function checkOccurence(big, small)
