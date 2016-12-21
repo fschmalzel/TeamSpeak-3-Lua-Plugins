@@ -214,7 +214,7 @@ function mapo(serverConnectionHandlerID, ...)
 					return
 				end
 				local poke = true
-				for i, v in ipairs(blacklistmp) do
+				for j, v in ipairs(blacklistmp) do
 					if v == ChannelID then
 						poke = false
 					end
@@ -224,7 +224,7 @@ function mapo(serverConnectionHandlerID, ...)
 					xprint("Error getting client nickname: " .. error .. " | ID: " .. ClientID)
 					return
 				end
-				for i2, blockedName in ipairs(blacklistClientNames) do
+				for j, blockedName in ipairs(blacklistClientNames) do
 					if tostring(string.find(string.lower(Nickname), string.lower(blockedName))) ~= "nil" then
 						poke = false
 					end
@@ -318,7 +318,7 @@ function mamoch(serverConnectionHandlerID, toChannelID, ...)
 			end
 			local poke = true
 			for i, blockedName in ipairs(blacklistClientNames) do
-				if string.find(string.lower(clientNickname), string.lower(blockedName)) ~= "nil" then
+				if tostring(string.find(string.lower(clientNickname), string.lower(blockedName))) ~= "nil" then
 					poke = false
 				end
 			end
@@ -345,6 +345,44 @@ function mamoch(serverConnectionHandlerID, toChannelID, ...)
 	end
 	xprint("└───────────────────────────────────────────────────────────────────────────────────────────────")
 	
+end
+
+local function errorCheck(error, msg)
+	if error == ts3errors.ERROR_not_connected then
+		xprint("Not connected")
+		return
+	elseif error ~= ts3errors.ERROR_ok then
+		xprint("Error " .. msg .. ": " .. error)
+		return
+	end
+end
+
+function mmcn(serverConnectionHandlerID, toChannelName, ...)
+	local arg = { ... }
+	local password = ""
+	if type(arg[1]) ~= "nil" then
+		password = arg[1]
+	end
+	local channelList, error = ts3.getChannelList(serverConnectionHandlerID)
+	errorCheck(error, "getting Channellist")
+	local toChannelID = -1
+	for i, channelID in pairs(channelList) do
+		local channelName, error = ts3.getChannelVariableAsString(serverConnectionHandlerID, channelID, ts3defs.ChannelProperties.CHANNEL_NAME)
+		errorCheck(error, "getting ChannelName")
+		if checkOccurence(channelName, toChannelName) then
+			toChannelID = channelID
+		end
+	end
+	if toChannelID ~= -1 then
+		mamoch(serverConnectionHandlerID, toChannelID, password)
+	end
+end
+
+local function checkOccurence(big, small)
+	if tostring(string.find(string.lower(big), string.lower(small))) ~= "nil" then
+		return true
+	end
+	return false
 end
 
 function getchids(serverConnectionHandlerID)
