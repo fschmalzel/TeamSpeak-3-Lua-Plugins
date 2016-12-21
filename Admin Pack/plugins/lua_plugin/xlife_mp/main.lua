@@ -93,8 +93,12 @@ local function errorCheck(error, msg)
 	end
 end
 
+local function replaceL(str)
+	return string.gsub(string.gsub(str, "|", "i"), "l", "i")
+end
+
 local function checkOccurence(big, small)
-	if tostring(string.find(string.lower(big), string.lower(small))) ~= "nil" then
+	if tostring(string.find(string.lower(replaceL(big)), string.lower(replaceL(small)))) ~= "nil" then
 		return true
 	end
 	return false
